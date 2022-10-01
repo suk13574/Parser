@@ -44,37 +44,43 @@ public class Parser {
 		else error();
 	}
 	
-	/* <expr> 변경
-	 * <expr> -> <bexp> {& <bexp> | '|' <bexp>} | !<expr> | true | false
-	 * 
+	/* 
+	 * <expr> -> <bexp> {& <bexp> | '|' <bexp>} | !<expr> | true | false 
+	 * 산술연산 또는 논리연산을 수행한다.
+	 * 논리연산자가 있다면 수행 후 result에 TRUE 또는 FALSE를 저장하고 반환한다.
+	 * 논리연산자가 없다면 bexp()를 호출하여 연산결과를 result에 저장하고 반환한다.
 	 */
 	int expr() {
-		int result = bexp();
-		if(token == '&' | token == '|'){
-			while(token == '&' | token == '|') {
-				if(token == '&') {
-					
-				}
-				else if(token == '|') {
-					
+		int result = 0;
+		if(token == '!') {
+			match(token);
+			result = expr();
+			result = (result == TRUE)?FALSE:TRUE;
+		}
+		else {
+			result = bexp();
+			while (token == '&' | token == '|') {
+				if (token == '&') {
+					match(token);
+					int result2 = bexp();
+					if(result == TRUE && result2 == TRUE) result = TRUE;
+					else result = FALSE;
+				} else if (token == '|') {
+					match(token);
+					int result2 = bexp();
+					if(result == TRUE || result2 == TRUE) result = TRUE;
+					else result = FALSE;
 				}
 			}
-		}
-		else if(token == '!') {
-			
-		}
-		else if(token == TRUE) {
-			
-		}
-		else if(token == FALSE) {
-			
 		}
 		return result;
 	}
 	
 	/* 
 	 * <bexp> -> <aexp> [(== | != | < | > | <= | >=) <aexp>]
-	 * 
+	 * 1. aexp()를 호출하여 결과를 result에 저장한다.
+	 * 2-(1). 비교연산자가 있다면 수행 후 result에 TRUE 또는 FALSE를 저장하고 반환한다.
+	 * 2-(2). 비교연산자가 없다면 result를 반환한다.
 	 */
 	int bexp() {
 		int result = aexp();
@@ -82,11 +88,14 @@ public class Parser {
 		if(token == '=') {
 			match('='); //토큰 매칭 시키고 다음 토큰 읽기
 			match('='); //다음 토큰 '='이어야 함
-			
+			int result2 = aexp();
+			result = (result==result2)?TRUE:FALSE;
 		}
 		else if(token == '!') {
 			match('!'); //토큰 매칭 시키고 다음 토큰 읽기
 			match('='); //다음 토큰 '='이어야 함
+			int result2 = aexp();
+			result = (result!=result2)?TRUE:FALSE;
 		}
 		else if(token == '<') {
 			match('<'); //토큰 매칭 시키고 다음 토큰 읽기
@@ -94,10 +103,13 @@ public class Parser {
 			// '<=' 연산자
 			if(token == '=') {
 				match('=');
+				int result2 = aexp();
+				result = (result<=result2)?TRUE:FALSE;
 			}
 			// '<' 연산자
 			else {
-				
+				int result2 = aexp();
+				result = (result<result2)?TRUE:FALSE;
 			}
 			
 		}
@@ -107,10 +119,13 @@ public class Parser {
 			// '>=' 연산자
 			if(token == '=') {
 				match('=');
+				int result2 = aexp();
+				result = (result>=result2)?TRUE:FALSE;
 			}
 			// '>' 연산자
 			else {
-				
+				int result2 = aexp();
+				result = (result>result2)?TRUE:FALSE;
 			}
 		}
 		return result;
@@ -118,11 +133,12 @@ public class Parser {
 	
 	/* 완료
 	 * <aexp> -> <term> {+ <term> | - <term>}
-	 * 덧셈 또는 뺄셈 연산에 대해 파싱하고 계산한다
-	 * 1. 토큰 값이 '+'이거나 '-'이면 아래를 수행한다.
-	 * 1-(1). 토큰 값 '+' -> 토큰 확인 후(match) 덧셈 연산을 수행하여 result에 넣는다.
-	 * 1-(2). 토큰 값 '-' -> 토큰 확인 후(match) 뺼셈 연산을 수행하여 result에 넣는다.
-	 * 2. 연산 결과를 반환한다.
+	 * 덧셈 또는 뺄셈 연산자가 있다면 파싱하고 계산한다.
+	 * 1. term() 호출하여 result에 저장한다.
+	 * 2. 토큰 값이 '+'이거나 '-'이면 아래를 수행한다.
+	 * 2-(1). 토큰 값 '+' -> 토큰 확인 후(match) 덧셈 연산을 수행하여 result에 넣는다.
+	 * 2-(2). 토큰 값 '-' -> 토큰 확인 후(match) 뺼셈 연산을 수행하여 result에 넣는다.
+	 * 3. result 반환한다.
 	 */
 	int aexp() {
 		int result = term();
@@ -141,7 +157,8 @@ public class Parser {
 	
 	/* 완료
 	 * <term> -> <factor> { '*' <fator> | '/' <factor> }
-	 * 곱셈 또는 나눗셈 연산 대해 파싱하고 계산한다.
+	 * 곱셈 또는 나눗셈 연산자가 있다면 파싱하고 계산한다.
+	 * 1. factor() 호출하여 result에 저장한다.
 	 * 1. 토큰 값이 '*'이거나 '/'이면 아래를 수행한다.
 	 * 1-(1). 토큰 값 '*' -> 토큰 확인 후(match) 곱셈 연산을 수행하여 result에 넣는다.
 	 * 1-(2). 토큰 값 '/' -> 토큰 확인 후(match) 나눗셈 연산을 수행하여 result에 넣는다.
@@ -189,14 +206,23 @@ public class Parser {
 	
 	/* 
 	 * command -> <expr> '\n'
-	 * 1. expr 메서드 호출
-	 * 2. 연산 끝나고 '\n' 토큰 받으면 결과값 출력
+	 * 1. expr() 호출한다.
+	 * 2. 연산 끝나고 '\n' 토큰 받으면 결과값 출력한다.
 	 */
 	void command() {
 		int result = expr();
 		// 현재 받은 토큰이 줄바굼 토큰이라면 결과 출력한다.
 		if(token == '\n') {
-			System.out.printf("The result is: %d\n", result);
+			if(result == TRUE) {
+				System.out.println(true);
+			}
+			else if(result == FALSE) {
+				System.out.println(false);
+			}
+			else {
+				System.out.println(result);
+			}
+//			System.out.printf("The result is: %d\n", result);
 		}
 	}
 	
@@ -209,9 +235,9 @@ public class Parser {
 		command();
 	}
 	
-	/* 완료
+	/* 
 	 * number -> digit { digit }
-	 * 캐릭터형 숫자 int 형으로 바꾸기
+	 * 캐릭터형 숫자 int 형으로 바꾼다.
 	 * ex. 12반환
 	 * 1) ch = '1';
 	 * 2) result = 1;
