@@ -175,7 +175,7 @@ public class Parser {
 		int result = 0;
 		//1.NUMBER 토큰
 		if(token == NUMBER) {
-			result = number(); //숫자 읽음
+			result = value; //숫자 읽음
 			match(NUMBER); //토큰 매치 시키고 다음 토큰 읽음
 		}
 		//2.'(' 토큰
