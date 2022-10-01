@@ -10,6 +10,8 @@ public class Parser {
 
 	private PushbackInputStream input;
 	final int NUMBER = 256;
+	final int TRUE = 255;
+	final int FALSE = 254;
 
 	Parser(PushbackInputStream is) {
 		input = is;
@@ -43,12 +45,30 @@ public class Parser {
 	}
 	
 	/* <expr> º¯°æ
-	 * <expr> -> <bexp> {& <bexp> | '|' <bexp>} | !<expr> | true | false }
+	 * <expr> -> <bexp> {& <bexp> | '|' <bexp>} | !<expr> | true | false
 	 * 
 	 */
 	int expr() {
 		int result = bexp();
-		
+		if(token == '&' | token == '|'){
+			while(token == '&' | token == '|') {
+				if(token == '&') {
+					
+				}
+				else if(token == '|') {
+					
+				}
+			}
+		}
+		else if(token == '!') {
+			
+		}
+		else if(token == TRUE) {
+			
+		}
+		else if(token == FALSE) {
+			
+		}
 		return result;
 	}
 	
